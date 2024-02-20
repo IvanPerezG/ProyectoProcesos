@@ -3,8 +3,8 @@ package jframe;
 import javax.swing.*;
 import java.awt.*;
 
-public class Screen extends JFrame {
-    public Screen() {
+public class Chat extends JFrame {
+    public Chat() {
         setTitle("WashUp");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1200, 900);
@@ -47,6 +47,6 @@ public class Screen extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(Screen::new);
+        SwingUtilities.invokeLater(Chat::new);
     }
 }
