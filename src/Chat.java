@@ -1,7 +1,3 @@
-package jframe;
-
-import clientes.Cliente;
-
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
@@ -29,6 +25,7 @@ public class Chat extends JFrame {
         enviarButton.addActionListener(e -> enviarMensaje());
 
         usuariosList = new JList<>();
+
         JScrollPane usuariosScrollPane = new JScrollPane(usuariosList);
         usuariosScrollPane.setPreferredSize(new Dimension(150, getHeight()));
 
@@ -43,7 +40,7 @@ public class Chat extends JFrame {
         panel.add(usuariosScrollPane, BorderLayout.EAST);
 
         add(panel);
-        setVisible(true);
+
     }
 
     private void enviarMensaje() {
@@ -61,8 +58,11 @@ public class Chat extends JFrame {
     public void actualizarListaUsuarios(List<String> usuarios) {
         SwingUtilities.invokeLater(() -> {
             DefaultListModel<String> model = new DefaultListModel<>();
+            usuariosList.setModel(model);
             for (String usuario : usuarios) {
-                model.addElement(usuario);
+                if(usuarios.contains(usuario)){
+                    model.addElement(usuario);
+                }
             }
             usuariosList.setModel(model);
         });

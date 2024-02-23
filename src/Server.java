@@ -1,7 +1,3 @@
-package servidor;
-
-import clientes.Cliente;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -36,29 +32,27 @@ public class Server {
                 escritores.add(escritor);
 
                 // Pedir al cliente que ingrese su nombre
-                escritor.println("Ingrese su nombre:");
                 String nombreCliente = new BufferedReader(new InputStreamReader(socketCliente.getInputStream())).readLine();
 
                 // Verificar si el nombre ya está en uso
                 if (nombreEstaEnUso(nombreCliente)) {
-                    // Enviar mensaje de error al cliente
-                    System.out.println("Nombre en uso.");
-                    escritor.println("#NOMBRE_EN_USO#");
+                    escritor.println("#NOMBRE_EN_USO#");    // Enviar codigo de error al cliente
                     socketCliente.close();
                 }
-
-                // Marcar el nombre como utilizado
+                // Añadimos Nombre a la lista y se envia a todos los usuarios conectados.
                 nombresUtilizados.add(nombreCliente);
                 enviarListaUsuarios();
 
                 broadcastMensaje("Bienvenido, " + nombreCliente + "!", escritor);
 
                 // Iniciar un nuevo hilo para manejar al cliente
-
                 new Thread(() -> manejarCliente(socketCliente, escritor, nombreCliente)).start();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //Nos aseguramos que si el cliente falla al conectarse al servidor la ejecucion de este mismo no termine
+            System.out.println("Fallo al conectar con el cliente.");
+            //Añadimos respuesta de error y volvemos a esperar conexiones.
+            iniciar();
         }
     }
 
@@ -72,23 +66,13 @@ public class Server {
 
             String mensaje;
             while ((mensaje = lector.readLine()) != null) {
-                if (mensaje.equals("#CLIENTE_DESCONECTADO#")) {
-                    /*nombresUtilizados.remove(nombreCliente);
-                    broadcastMensaje(nombreCliente + " se ha desconectado.");
-                    enviarListaUsuarios();
-                    */
-                    socket.close();
-                    break;
-                } else {
-                    broadcastMensaje(nombreCliente + ": " + mensaje, escritor);
-                }
+                broadcastMensaje(nombreCliente + ": " + mensaje, escritor);
             }
         } catch (IOException e) {
             nombresUtilizados.remove(nombreCliente);
-            broadcastMensaje(nombreCliente + " se ha desconectado.", escritor);
             enviarListaUsuarios();
             escritores.remove(escritor);
-        }finally {
+        } finally {
             try {
                 socket.close();
             } catch (IOException e) {
@@ -96,15 +80,20 @@ public class Server {
             }
         }
     }
-
     private void broadcastMensaje(String mensaje, PrintWriter emisor) {
         for (PrintWriter escritor : escritores) {
-            if(escritor != emisor){
+            if (escritor != emisor) {
                 escritor.println(mensaje); // Enviar el mensaje a cada cliente conectado
             }
         }
     }
 
+    /*Funcion enviarListaUsuarios
+     *
+     *   Encargada de enviar la Lista de Usuarios a todos los Clientes conectados.
+     *   Se trata de un for each que recorre todos los usuarios
+     *   Eliminamos el ultimo caracter antes de enviarlo (dicho caracter se utiliza para diferenciar usuarios)
+     * */
     private void enviarListaUsuarios() {
         StringBuilder listaUsuarios = new StringBuilder("#LISTA_USUARIOS# ");
         for (String nombre : nombresUtilizados) {
@@ -113,4 +102,5 @@ public class Server {
         listaUsuarios.deleteCharAt(listaUsuarios.length() - 1); // Eliminar la última coma
         broadcastMensaje(listaUsuarios.toString(), null);
     }
+
 }
