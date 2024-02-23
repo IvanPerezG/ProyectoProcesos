@@ -50,12 +50,12 @@ public class Chat extends JFrame {
             mensajeField.setText(""); // Limpia el campo de entrada después de enviar el mensaje
         }
     }
-
     public void appendMensaje(String mensaje) {
         mensajesArea.append(mensaje + "\n");
     }
 
     public void actualizarListaUsuarios(List<String> usuarios) {
+
         SwingUtilities.invokeLater(() -> {
             DefaultListModel<String> model = new DefaultListModel<>();
             usuariosList.setModel(model);
@@ -64,7 +64,7 @@ public class Chat extends JFrame {
                     model.addElement(usuario);
                 }
             }
-            usuariosList.setModel(model);
+             usuariosList.setModel(model);
         });
     }
 }
