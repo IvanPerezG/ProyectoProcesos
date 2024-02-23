@@ -1,52 +1,70 @@
 package jframe;
 
+import clientes.Cliente;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class Chat extends JFrame {
-    public Chat() {
-        setTitle("WashUp");
+    private JTextArea mensajesArea;
+    private JTextField mensajeField;
+    private Cliente cliente;
+    private JList<String> usuariosList;
+
+    public Chat(Cliente cliente) {
+        super("Chat Cliente");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(1200, 900);
+        setSize(600, 400);
 
-        // Panel principal dividido en dos secciones
-        JPanel mainPanel = new JPanel(new BorderLayout());
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        this.cliente = cliente;
 
-        // Panel para la sección de mensajes
-        JPanel messagePanel = new JPanel(new BorderLayout());
-        JTextArea messageArea = new JTextArea();
-        messageArea.setEditable(false);
-        messageArea.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        JScrollPane messageScrollPane = new JScrollPane(messageArea);
-        messagePanel.add(messageScrollPane, BorderLayout.CENTER);
+        mensajesArea = new JTextArea();
+        mensajesArea.setEditable(false);
+        JScrollPane scrollPane = new JScrollPane(mensajesArea);
 
-        // Panel para la sección de usuarios conectados
-        JPanel usersPanel = new JPanel();
-        usersPanel.setPreferredSize(new Dimension(200, getHeight()));
-        // Agregar una lista de usuarios conectados (aún por implementar)
+        mensajeField = new JTextField();
+        JButton enviarButton = new JButton("Enviar");
 
-        // Panel para la sección de entrada de texto y botón
+        enviarButton.addActionListener(e -> enviarMensaje());
+
+        usuariosList = new JList<>();
+        JScrollPane usuariosScrollPane = new JScrollPane(usuariosList);
+        usuariosScrollPane.setPreferredSize(new Dimension(150, getHeight()));
+
+        JPanel panel = new JPanel(new BorderLayout());
+        panel.add(scrollPane, BorderLayout.CENTER);
+
         JPanel inputPanel = new JPanel(new BorderLayout());
-        JTextField inputField = new JTextField();
-        inputField.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        inputField.setBorder(BorderFactory.createLineBorder(Color.blue));
-        JButton sendButton = new JButton("Enviar");
-        inputPanel.add(inputField, BorderLayout.CENTER);
-        inputPanel.add(sendButton, BorderLayout.EAST);
+        inputPanel.add(mensajeField, BorderLayout.CENTER);
+        inputPanel.add(enviarButton, BorderLayout.EAST);
 
-        // Agregar los paneles al panel principal
-        mainPanel.add(messagePanel, BorderLayout.CENTER);
-        mainPanel.add(usersPanel, BorderLayout.EAST);
-        mainPanel.add(inputPanel, BorderLayout.SOUTH);
+        panel.add(inputPanel, BorderLayout.SOUTH);
+        panel.add(usuariosScrollPane, BorderLayout.EAST);
 
-        // Agregar el panel principal al JFrame
-        add(mainPanel);
-
+        add(panel);
         setVisible(true);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(Chat::new);
+    private void enviarMensaje() {
+        String mensaje = mensajeField.getText();
+        if (!mensaje.isEmpty()) {
+            cliente.enviarMensaje(mensaje);
+            mensajeField.setText(""); // Limpia el campo de entrada después de enviar el mensaje
+        }
+    }
+
+    public void appendMensaje(String mensaje) {
+        mensajesArea.append(mensaje + "\n");
+    }
+
+    public void actualizarListaUsuarios(List<String> usuarios) {
+        SwingUtilities.invokeLater(() -> {
+            DefaultListModel<String> model = new DefaultListModel<>();
+            for (String usuario : usuarios) {
+                model.addElement(usuario);
+            }
+            usuariosList.setModel(model);
+        });
     }
 }
