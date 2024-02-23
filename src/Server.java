@@ -1,7 +1,3 @@
-package servidor;
-
-import clientes.Cliente;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,18 +43,20 @@ public class Server {
                     socketCliente.close();
                 }
 
-                // Marcar el nombre como utilizado
+                // Añadimos Nombre a la lista y se envia a todos los usuarios conectados.
                 nombresUtilizados.add(nombreCliente);
                 enviarListaUsuarios();
 
                 broadcastMensaje("Bienvenido, " + nombreCliente + "!", escritor);
 
                 // Iniciar un nuevo hilo para manejar al cliente
-
                 new Thread(() -> manejarCliente(socketCliente, escritor, nombreCliente)).start();
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //Nos aseguramos que si el cliente falla al conectarse al servidor la ejecucion de este mismo no termine
+            System.out.println("Fallo al conectar con el cliente.");
+            //Añadimos respuesta de error y volvemos a esperar conexiones.
+            iniciar();
         }
     }
 

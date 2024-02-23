@@ -1,7 +1,3 @@
-package clientes;
-
-import jframe.Chat;
-
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -82,8 +78,6 @@ public class Cliente {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            new Cliente();
-        });
+        SwingUtilities.invokeLater(Cliente::new);
     }
 }
