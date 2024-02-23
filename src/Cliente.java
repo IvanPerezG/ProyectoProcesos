@@ -41,7 +41,6 @@ public class Cliente {
         try {
             String mensaje;
             while ((mensaje = lectorServidor.readLine()) != null) {
-                System.out.println(mensaje);
                 if (mensaje.startsWith("#LISTA_USUARIOS#")) {
                     String[] usuarios = mensaje.substring(16).split(",");
                     for (String usuario : usuarios) {

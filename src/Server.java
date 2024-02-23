@@ -64,7 +64,9 @@ public class Server {
         } catch (IOException e) {
             nombresUtilizados.remove(nombreCliente);
             enviarListaUsuarios();
+            broadcastMensaje("---------- "+nombreCliente +": Me desconecto ----------",escritor);
             escritores.remove(escritor);
+
         } finally {
             try {
                 socket.close();
