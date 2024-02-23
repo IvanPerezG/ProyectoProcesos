@@ -11,57 +11,49 @@ public class Cliente {
     private PrintWriter escritor;
     private Chat chat;
     private String nombreUsuario;
-    private boolean existe = false;
-    private List<String> lista;
+    private List<String> lista =  new ArrayList<>();;
 
     public Cliente() {
         conectarAlServidor();
-    }
 
+    }
     private void conectarAlServidor() {
         try {
             Socket socket = new Socket("localhost", 5555);
             BufferedReader lectorServidor = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             escritor = new PrintWriter(socket.getOutputStream(), true);
-
-            // Iniciar un nuevo hilo para recibir mensajes del servidor
-            new Thread(() -> recibirMensajesServidor(lectorServidor)).start();
-
-            while (!lista.contains(nombreUsuario)) {
-                // Solicitar al usuario que ingrese su nombre
-                nombreUsuario = JOptionPane.showInputDialog("Ingrese su nombre:");
+            lista.clear();
+            new Thread(() -> recibirMensajesServidor(lectorServidor)).start();  // Iniciar un nuevo hilo para recibir mensajes del servidor
+            chat = new Chat(this);  // Inicializar el frame del chat
+            boolean salir = false;
+            do {
+                nombreUsuario = JOptionPane.showInputDialog("Ingrese su nombre:");   // Solicitar al usuario que ingrese su nombre
+                escritor.println(nombreUsuario);    // Enviar el nombre de usuario al servidor
                 if(lista.contains(nombreUsuario)){
-                    //JOptionPane.showMessageDialog(this,"Nombre ya usado, vuelva a intentarlo.");
+                    JOptionPane.showInputDialog("Nombre ya usado, vuelva a intentarlo.");
                 }
-                // Enviar el nombre de usuario al servidor
-                escritor.println(nombreUsuario);
+            } while (lista.contains(nombreUsuario));
 
-            }
-            // Inicializar el frame del chat
-            chat = new Chat(this);
-
+            chat.setVisible(true);  //Cuando el usuario es aceptado se le muestra la interfaz
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
     private void recibirMensajesServidor(BufferedReader lectorServidor) {
         try {
             String mensaje;
             while ((mensaje = lectorServidor.readLine()) != null) {
                 System.out.println(mensaje);
                 if (mensaje.startsWith("#LISTA_USUARIOS#")) {
-                    String[] usuarios = mensaje.substring(15).split(",");
-                    lista= new ArrayList<>();
+                    String[] usuarios = mensaje.substring(16).split(",");
                     for (String usuario : usuarios) {
                         lista.add(usuario.trim());
                     }
-                    chat.actualizarListaUsuarios(lista); // Aquí se llama al método
+                    chat.actualizarListaUsuarios(lista);
+                } else if (mensaje.startsWith("#NOMBRE_EN_USO#")){
+                    System.exit(0);
                 } else {
                     chat.appendMensaje(mensaje);
-                }
-                if(mensaje.startsWith("#NOMBRE_EN_USO#")){
-                    this.existe = true;
                 }
             }
         } catch (IOException e) {
@@ -69,7 +61,6 @@ public class Cliente {
         }
 
     }
-
     public void enviarMensaje(String mensaje) {
         if (!mensaje.isEmpty()) {
             escritor.println(mensaje);
