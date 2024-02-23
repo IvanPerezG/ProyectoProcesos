@@ -11,7 +11,6 @@ public class Server {
     private Set<String> nombresUtilizados = new HashSet<>();
     private PrintWriter escritor;
     private Set<PrintWriter> escritores = new HashSet<>();
-    private Cliente cliente;
     private final int PUERTO = 5555;
 
     public static void main(String[] args) {
@@ -30,36 +29,30 @@ public class Server {
                 this.escritor = new PrintWriter(socketCliente.getOutputStream(), true);
 
                 escritores.add(escritor);
-
-                // Pedir al cliente que ingrese su nombre
                 String nombreCliente = new BufferedReader(new InputStreamReader(socketCliente.getInputStream())).readLine();
 
-                // Verificar si el nombre ya está en uso
-                if (nombreEstaEnUso(nombreCliente)) {
-                    escritor.println("#NOMBRE_EN_USO#");    // Enviar codigo de error al cliente
+                if (nombreEstaEnUso(nombreCliente)) {    // Verificar si el nombre ya está en uso
+                    escritor.println("#NOMBRE_EN_USO#");
                     socketCliente.close();
+                }else {
+                    nombresUtilizados.add(nombreCliente);       // Añadimos Nombre a la lista y se envia a todos los usuarios conectados.
+                    enviarListaUsuarios();
+
+                    broadcastMensaje("Bienvenido, " + nombreCliente + "!", escritor);
+
+                    // Iniciar un nuevo hilo para manejar al cliente
+                    new Thread(() -> manejarCliente(socketCliente, escritor, nombreCliente)).start();
                 }
-                // Añadimos Nombre a la lista y se envia a todos los usuarios conectados.
-                nombresUtilizados.add(nombreCliente);
-                enviarListaUsuarios();
-
-                broadcastMensaje("Bienvenido, " + nombreCliente + "!", escritor);
-
-                // Iniciar un nuevo hilo para manejar al cliente
-                new Thread(() -> manejarCliente(socketCliente, escritor, nombreCliente)).start();
             }
         } catch (IOException e) {
-            //Nos aseguramos que si el cliente falla al conectarse al servidor la ejecucion de este mismo no termine
+            //Nos aseguramos que servidor la ejecucion de este mismo no termine
             System.out.println("Fallo al conectar con el cliente.");
-            //Añadimos respuesta de error y volvemos a esperar conexiones.
             iniciar();
         }
     }
-
     private boolean nombreEstaEnUso(String nombre) {
         return nombresUtilizados.contains(nombre);
     }
-
     private void manejarCliente(Socket socket, PrintWriter escritor, String nombreCliente) {
         try {
             BufferedReader lector = new BufferedReader(new InputStreamReader(socket.getInputStream()));
